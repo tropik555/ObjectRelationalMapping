@@ -174,15 +174,19 @@ public class OrmManager {
         String s = clazz.getSimpleName();
         String sqlQuery = String.format(commonQueries.GETall.QUERY, s);
         ResultSet resultSet = null;
-        List<T> list = new ArrayList<>();
+        ArrayList<T> list=null;
 
         try {
             Statement statement = connection.createStatement();
             resultSet = statement.executeQuery(sqlQuery);
-            Object o = clazz.getDeclaredConstructor().newInstance();
+            list=new ArrayList<>(resultSet.getFetchSize());
+          //  Object o = clazz.getDeclaredConstructor().newInstance();
 
             while (resultSet.next()) {
+                Object o = clazz.getDeclaredConstructor().newInstance();
+
                 if (s.equals("Animal")) {
+
                     Method method = clazz.getMethod("setId", Long.class);
                     method.invoke(o, resultSet.getLong("id"));
                     Method method1 = clazz.getMethod("setName", String.class);
@@ -196,6 +200,8 @@ public class OrmManager {
                     method1.invoke(o, resultSet.getString("address"));
                 }
                 list.add((T) o);
+
+
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -292,7 +298,7 @@ public class OrmManager {
     }
 
     enum commonQueries {
-        GETall("SELECT * FROM %s"),
+        GETall("SELECT * FROM %s ORDER BY id"),
         GETbyId("SELECT * FROM %s WHERE id = (?)");
         String QUERY;
 
